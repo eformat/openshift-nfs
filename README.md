@@ -67,6 +67,53 @@ PROJ=nfs4 PROVISIONERNAME=nfs-client-provisioner-4 K8SPROV=nfs-subdir-external-p
 K8SPROV=nfs-subdir-external-provisioner-4 envsubst < deploy/class-4.yaml | oc apply -f -
 ```
 
+### Test it out
+
+Try it out with a Hello world app.
+
+```bash
+oc new-project foo
+
+oc apply -f - <<EOF
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: foo3
+  namespace: foo
+spec:
+  storageClassName: managed-nfs3-storage
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+
+oc new-app quay.io/eformat/welcome:latest --name welcome3
+oc set volume deployment/welcome3 --add --overwrite -t persistentVolumeClaim --claim-name=foo3 --name=tools-data --mount-path=/mnt
+
+oc apply -f - <<EOF
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: foo4
+  namespace: foo
+spec:
+  storageClassName: managed-nfs4-storage
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+
+oc new-app quay.io/eformat/welcome:latest --name welcome4
+oc set volume deployment/welcome4 --add --overwrite -t persistentVolumeClaim --claim-name=foo4 --name=tools-data --mount-path=/mnt
+
+oc exec $(oc get pod -l deployment=welcome3 -o name) -- cat /proc/mounts|grep /mnt
+oc exec $(oc get pod -l deployment=welcome4 -o name) -- cat /proc/mounts|grep /mnt
+```
+
 ## Troubleshoot
 
 If the client doesn't work, use the deployment in `deploy/troubleshoot.yml` to troubleshoot.

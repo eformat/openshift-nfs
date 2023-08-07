@@ -1,0 +1,36 @@
+# Use this to troubleshoot any NFS mounting issues.
+#
+# You can then try to mount from the server with the following command:
+#
+# mount -o nolock,ro,vers=4.2 nfs-server.nfs.svc.cluster.local:/0 /mnt
+# mount -t nfs -o nfsvers=3,nolock nfs-server.nfs.svc.cluster.local:/0 /mnt
+#
+# mount or cat /proc/mounts
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nfs-troubleshoot
+  name: nfs-troubleshoot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: nfs-troubleshoot
+  template:
+    metadata:
+      labels:
+        name: nfs-troubleshoot
+    spec:
+      serviceAccountName: nfs-server
+      containers:
+      - image: quay.io/eformat/nfs-fedora:latest
+        command:
+          - sh
+          - -c
+          - 'sleep infinity'
+        imagePullPolicy: IfNotPresent
+        name: busybox
+        securityContext:
+          privileged: true

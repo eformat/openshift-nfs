@@ -1,0 +1,66 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: $PROVISIONERNAME
+  # replace with namespace where provisioner is deployed
+  namespace: $PROJ
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: $PROVISIONERNAME-runner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: run-$PROVISIONERNAME
+subjects:
+  - kind: ServiceAccount
+    name: $PROVISIONERNAME
+    # replace with namespace where provisioner is deployed
+    namespace: $PROJ
+roleRef:
+  kind: ClusterRole
+  name: $PROVISIONERNAME-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: leader-locking-$PROVISIONERNAME
+  # replace with namespace where provisioner is deployed
+  namespace: $PROJ
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: leader-locking-$PROVISIONERNAME
+  # replace with namespace where provisioner is deployed
+  namespace: $PROJ
+subjects:
+  - kind: ServiceAccount
+    name: $PROVISIONERNAME
+    # replace with namespace where provisioner is deployed
+    namespace: $PROJ
+roleRef:
+  kind: Role
+  name: leader-locking-$PROVISIONERNAME
+  apiGroup: rbac.authorization.k8s.io

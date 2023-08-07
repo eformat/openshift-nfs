@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $PROVISIONERNAME
+  labels:
+    app: $PROVISIONERNAME
+  # replace with namespace where provisioner is deployed
+  namespace: $PROJ
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: $PROVISIONERNAME
+  template:
+    metadata:
+      labels:
+        app: $PROVISIONERNAME
+    spec:
+      serviceAccountName: $PROVISIONERNAME
+      containers:
+        - name: $PROVISIONERNAME
+          image: k8s.gcr.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: k8s-sigs.io/$K8SPROV
+            - name: NFS_SERVER
+              value: $NFSSERVERIP
+            - name: NFS_PATH
+              value: $NFSPATH
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: $NFSSERVERIP
+            path: $NFSPATH

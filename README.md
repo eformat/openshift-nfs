@@ -62,8 +62,8 @@ NFSv4
 ```bash
 oc new-project nfs4
 oc adm policy add-scc-to-user nfs-admin -z nfs-client-provisioner-4
-PROJ=nfs3 PROVISIONERNAME=nfs-client-provisioner-4 envsubst < deploy/rbac.yaml | oc apply -f -
-PROJ=nfs3 PROVISIONERNAME=nfs-client-provisioner-4 K8SPROV=nfs-subdir-external-provisioner-4 NFSSERVERIP=$NFSSERVERIP NFSPATH=/ envsubst < deploy/deployment.yaml | oc apply -f -
+PROJ=nfs4 PROVISIONERNAME=nfs-client-provisioner-4 envsubst < deploy/rbac.yaml | oc apply -f -
+PROJ=nfs4 PROVISIONERNAME=nfs-client-provisioner-4 K8SPROV=nfs-subdir-external-provisioner-4 NFSSERVERIP=$NFSSERVERIP NFSPATH=/ envsubst < deploy/deployment.yaml | oc apply -f -
 K8SPROV=nfs-subdir-external-provisioner-4 envsubst < deploy/class-4.yaml | oc apply -f -
 ```
 
